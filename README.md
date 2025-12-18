@@ -14,6 +14,7 @@ Table of Contents
 - Prerequisites and supported platforms
 - What the script does (high level)
 - Files/directories created by the script
+- Directory structure (visual)
 - Environment & configuration variables you can edit
 - Step-by-step installation / usage
 - Starting and managing Jenkins
@@ -83,6 +84,33 @@ Below are the important locations created by the script (default root is `/proje
   - `secrets/adminPassword` — admin password file created by the script
 - `jenkins-ssh/` — host directory containing SSH private key and `known_hosts` (mounted read-only into the container)
 - Host user/group `jenkins` (UID/GID default 2001) are created if missing.
+
+Directory structure (visual)
+============================
+For convenience, here is an example of the directory layout the installer creates under the default `ROOT_DIR` (`/projects/jenkins-installation`). Replace `/projects/jenkins-installation` with your chosen `ROOT_DIR` if you changed it.
+
+```datalex/jenkins-installation/README.md#L1-40
+/projects/jenkins-installation/
+├─ jenkins/                        # Docker build context and JCasC location
+│  ├─ Dockerfile                   # Custom Jenkins Dockerfile (generated)
+│  ├─ plugins.txt                  # Plugin list used at image build time
+│  ├─ entrypoint.sh                # Optional entrypoint to initialize AWS config
+│  └─ casc/
+│     └─ jenkins.yaml              # Jenkins Configuration-as-Code (JCasC)
+├─ docker-compose/
+│  └─ docker-compose.yml           # Compose file to build and run local-jenkins
+├─ jenkins-ssh/                     # Host SSH dir mounted into container (read-only)
+│  ├─ id_rsa                        # Private key copied/pasted by the installer
+│  └─ known_hosts                   # Populated from ssh-keyscan (bitbucket.org)
+└─ jenkins/jenkins_home/            # Persistent Jenkins home mounted into container
+   └─ secrets/
+      └─ adminPassword              # Admin password file written by the installer
+```
+
+Notes on the tree
+- `jenkins/` is the Docker build context used by the `docker-compose` service to build `local-jenkins:latest`.
+- `jenkins-ssh/` is mounted read-only inside the container at `/var/jenkins_home/.ssh` and is the source for the SSH credential created via JCasC.
+- `jenkins/jenkins_home` is the persistent Jenkins data directory — back this up if you need to preserve job history, artifacts, credentials, etc.
 
 Configuration variables you can change in the script
 ===================================================
